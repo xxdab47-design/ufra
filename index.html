@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UFRA — Professeurs & Matières</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ===== VARIABLES ===== */
+    :root {
+      --bg:        #0b0f1a;
+      --surface:   #141929;
+      --card:      #1a2035;
+      --border:    #242d45;
+      --accent:    #f5a623;
+      --accent2:   #e05c5c;
+      --text:      #e8eaf6;
+      --muted:     #7a84a3;
+      --chip-bg:   #1e2d45;
+      --chip-text: #6ab3f5;
+    }
+
+    /* ===== RESET ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ===== BACKGROUND TEXTURE ===== */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 10%, rgba(245,166,35,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(106,179,245,0.05) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ===== HEADER ===== */
+    header {
+      position: relative; z-index: 1;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.5rem 3rem;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      background: rgba(11,15,26,0.85);
+      position: sticky; top: 0;
+    }
+    .logo {
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+    .logo-icon {
+      width: 38px; height: 38px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: grid; place-items: center;
+      font-size: 1.2rem;
+    }
+    .logo-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.25rem; font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .logo-text span { color: var(--accent); }
+    .header-badge {
+      font-size: 0.7rem; font-weight: 600; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 0.3rem 0.75rem; border-radius: 99px;
+    }
+
+    /* ===== HERO ===== */
+    .hero {
+      position: relative; z-index: 1;
+      text-align: center; padding: 4rem 2rem 2.5rem;
+    }
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.2rem, 5vw, 3.8rem);
+      font-weight: 900; line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+    .hero h1 em { color: var(--accent); font-style: normal; }
+    .hero p {
+      color: var(--muted); margin-top: 0.75rem;
+      font-size: 1rem; font-weight: 300;
+    }
+
+    /* ===== STATS BAR ===== */
+    .stats-bar {
+      position: relative; z-index: 1;
+      display: flex; justify-content: center; gap: 1.5rem;
+      padding: 1rem 2rem 2rem; flex-wrap: wrap;
+    }
+    .stat-item {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 1rem 2rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      min-width: 130px;
+      transition: border-color 0.2s;
+    }
+    .stat-item:hover { border-color: var(--accent); }
+    .stat-number {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem; font-weight: 700; color: var(--accent);
+    }
+    .stat-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 0.2rem; }
+
+    /* ===== TOOLBAR ===== */
+    .toolbar {
+      position: relative; z-index: 1;
+      display: flex; gap: 1rem; align-items: center;
+      padding: 0 3rem 1.5rem; flex-wrap: wrap;
+    }
+    .search-box {
+      flex: 1; min-width: 220px;
+      display: flex; align-items: center; gap: 0.6rem;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 0.6rem 1rem;
+      transition: border-color 0.2s;
+    }
+    .search-box:focus-within { border-color: var(--accent); }
+    .search-box input {
+      background: none; border: none; outline: none;
+      color: var(--text); font-family: inherit; font-size: 0.9rem;
+      width: 100%;
+    }
+    .search-box input::placeholder { color: var(--muted); }
+    .search-icon { color: var(--muted); font-size: 1rem; }
+
+    .filter-select {
+      background: var(--card); border: 1px solid var(--border);
+      color: var(--text); font-family: inherit; font-size: 0.85rem;
+      padding: 0.6rem 1rem; border-radius: 10px; cursor: pointer;
+      outline: none; transition: border-color 0.2s;
+    }
+    .filter-select:focus { border-color: var(--accent); }
+
+    .btn-refresh {
+      display: flex; align-items: center; gap: 0.5rem;
+      background: var(--accent); color: #0b0f1a;
+      font-family: inherit; font-size: 0.85rem; font-weight: 600;
+      border: none; border-radius: 10px;
+      padding: 0.65rem 1.2rem; cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    .btn-refresh:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn-refresh:active { transform: scale(0.97); }
+
+    /* ===== GRID ===== */
+    .grid {
+      position: relative; z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.4rem; padding: 0 3rem 4rem;
+    }
+
+    /* ===== CARD ===== */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      transition: transform 0.25s ease, border-color 0.25s, box-shadow 0.25s;
+      animation: fadeUp 0.4s ease both;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(245,166,35,0.4);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-header {
+      display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1rem;
+    }
+    .avatar {
+      width: 52px; height: 52px; flex-shrink: 0;
+      border-radius: 12px;
+      display: grid; place-items: center;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem; font-weight: 700;
+      color: #0b0f1a;
+    }
+    .card-info { flex: 1; min-width: 0; }
+    .card-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem; font-weight: 700;
+      line-height: 1.2; white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .card-grade {
+      font-size: 0.75rem; color: var(--muted);
+      margin-top: 0.2rem; font-weight: 400;
+    }
+    .card-email {
+      font-size: 0.78rem; color: var(--chip-text);
+      margin-top: 0.3rem;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+
+    /* ===== DIVIDER ===== */
+    .divider {
+      height: 1px; background: var(--border);
+      margin: 1rem 0;
+    }
+
+    /* ===== CHIPS ===== */
+    .matieres-label {
+      font-size: 0.7rem; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--muted);
+      margin-bottom: 0.6rem; font-weight: 600;
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      background: var(--chip-bg);
+      border: 1px solid rgba(106,179,245,0.18);
+      color: var(--chip-text);
+      font-size: 0.75rem; font-weight: 500;
+      padding: 0.3rem 0.65rem; border-radius: 99px;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .chip:hover { background: rgba(106,179,245,0.12); border-color: var(--chip-text); }
+    .chip-code {
+      font-size: 0.65rem; font-weight: 700;
+      color: var(--accent); opacity: 0.8;
+    }
+    .chip-niveau {
+      font-size: 0.62rem;
+      background: rgba(245,166,35,0.12);
+      color: var(--accent);
+      padding: 0.1rem 0.4rem;
+      border-radius: 99px;
+    }
+    .no-matiere {
+      font-size: 0.8rem; color: var(--muted); font-style: italic;
+    }
+
+    /* ===== ÉTAT LOADING / ERREUR / VIDE ===== */
+    .state-box {
+      position: relative; z-index: 1;
+      grid-column: 1 / -1;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 1rem;
+      padding: 4rem 2rem; text-align: center;
+    }
+    .state-icon { font-size: 3rem; }
+    .state-title { font-size: 1.1rem; font-weight: 600; }
+    .state-sub { color: var(--muted); font-size: 0.85rem; max-width: 320px; }
+
+    /* Spinner */
+    .spinner {
+      width: 44px; height: 44px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===== COULEURS DES AVATARS ===== */
+    .av-0 { background: #f5a623; }
+    .av-1 { background: #6ab3f5; }
+    .av-2 { background: #a78bfa; }
+    .av-3 { background: #34d399; }
+    .av-4 { background: #f472b6; }
+
+    /* ===== FOOTER ===== */
+    footer {
+      position: relative; z-index: 1;
+      text-align: center;
+      padding: 1.5rem; border-top: 1px solid var(--border);
+      color: var(--muted); font-size: 0.78rem;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      header { padding: 1rem 1.2rem; }
+      .hero { padding: 2.5rem 1.2rem 1.5rem; }
+      .toolbar { padding: 0 1.2rem 1.2rem; }
+      .grid { padding: 0 1.2rem 3rem; gap: 1rem; }
+      .stats-bar { padding: 0.5rem 1.2rem 1.5rem; gap: 0.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🎓</div>
+    <div class="logo-text"><span>UF</span>RA</div>
+  </div>
+  <div class="header-badge">ESG Abidjan · 2025–2026</div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <h1>Professeurs &amp;<br/><em>Matières enseignées</em></h1>
+  <p>Annuaire pédagogique — Université Française d'Abidjan</p>
+</section>
+
+<!-- STATS BAR -->
+<div class="stats-bar" id="statsBar">
+  <!-- rempli dynamiquement -->
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="search-box">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="Rechercher un professeur ou une matière…" />
+  </div>
+  <select class="filter-select" id="filterNiveau">
+    <option value="">Tous les niveaux</option>
+    <option value="L1">L1</option>
+    <option value="L2">L2</option>
+    <option value="L3">L3</option>
+  </select>
+  <button class="btn-refresh" onclick="loadData()">↻ Actualiser</button>
+</div>
+
+<!-- GRILLE DES CARTES -->
+<div class="grid" id="grid">
+  <div class="state-box">
+    <div class="spinner"></div>
+    <div class="state-title">Chargement en cours…</div>
+    <div class="state-sub">Connexion à la base de données</div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  Projet académique UFRA &nbsp;·&nbsp; JavaScript + MySQL &nbsp;·&nbsp; Koissy Melvin Thomas
+</footer>
+
+<script>
+  // ============================================
+  //  CONFIG : change cette URL si ton serveur
+  //  tourne sur un autre port ou hôte
+  // ============================================
+  const API_BASE = 'http://localhost:3000/api';
+
+  let allProfs = [];
+
+  // ---- Couleurs d'avatar cycliques ----
+  function avatarClass(index) { return `av-${index % 5}`; }
+  function initiales(nom, prenom) {
+    return (prenom[0] + nom[0]).toUpperCase();
+  }
+
+  // ---- Charge les stats ----
+  async function loadStats() {
+    try {
+      const res = await fetch(`${API_BASE}/stats`);
+      const { data } = await res.json();
+      document.getElementById('statsBar').innerHTML = `
+        <div class="stat-item">
+          <div class="stat-number">${data.total_profs}</div>
+          <div class="stat-label">Professeurs</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">${data.total_matieres}</div>
+          <div class="stat-label">Matières</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">${data.total_enseignements}</div>
+          <div class="stat-label">Enseignements</div>
+        </div>
+      `;
+    } catch {
+      document.getElementById('statsBar').innerHTML = '';
+    }
+  }
+
+  // ---- Charge et affiche les professeurs ----
+  async function loadData() {
+    showLoading();
+    try {
+      const res = await fetch(`${API_BASE}/professeurs`);
+      if (!res.ok) throw new Error('Erreur HTTP ' + res.status);
+      const { data } = await res.json();
+      allProfs = data;
+      renderCards(allProfs);
+      loadStats();
+    } catch (err) {
+      showError(err.message);
+    }
+  }
+
+  // ---- Rendu des cartes ----
+  function renderCards(profs) {
+    const grid = document.getElementById('grid');
+    if (!profs.length) {
+      grid.innerHTML = `
+        <div class="state-box">
+          <div class="state-icon">🔎</div>
+          <div class="state-title">Aucun résultat</div>
+          <div class="state-sub">Essaie avec un autre terme de recherche.</div>
+        </div>`;
+      return;
+    }
+
+    grid.innerHTML = profs.map((prof, i) => {
+      const chips = (prof.matieres && prof.matieres.length)
+        ? prof.matieres.map(m => `
+            <div class="chip">
+              <span class="chip-code">${m.code}</span>
+              ${m.libelle}
+              <span class="chip-niveau">${m.niveau}</span>
+            </div>`).join('')
+        : '<span class="no-matiere">Aucune matière assignée</span>';
+
+      return `
+        <div class="card" style="animation-delay:${i * 0.06}s">
+          <div class="card-header">
+            <div class="avatar ${avatarClass(i)}">${initiales(prof.nom, prof.prenom)}</div>
+            <div class="card-info">
+              <div class="card-name">${prof.prenom} ${prof.nom}</div>
+              <div class="card-grade">${prof.grade || 'Enseignant'}</div>
+              <div class="card-email">${prof.email}</div>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="matieres-label">📚 Matières enseignées</div>
+          <div class="chips">${chips}</div>
+        </div>`;
+    }).join('');
+  }
+
+  // ---- Filtrage ----
+  function applyFilters() {
+    const query  = document.getElementById('searchInput').value.toLowerCase().trim();
+    const niveau = document.getElementById('filterNiveau').value;
+
+    const filtered = allProfs.filter(prof => {
+      const matchSearch = !query ||
+        `${prof.nom} ${prof.prenom}`.toLowerCase().includes(query) ||
+        prof.email.toLowerCase().includes(query) ||
+        (prof.matieres || []).some(m => m.libelle.toLowerCase().includes(query) || m.code.toLowerCase().includes(query));
+
+      const matchNiveau = !niveau ||
+        (prof.matieres || []).some(m => m.niveau === niveau);
+
+      return matchSearch && matchNiveau;
+    });
+
+    renderCards(filtered);
+  }
+
+  // ---- États UI ----
+  function showLoading() {
+    document.getElementById('grid').innerHTML = `
+      <div class="state-box">
+        <div class="spinner"></div>
+        <div class="state-title">Chargement en cours…</div>
+        <div class="state-sub">Connexion à la base de données</div>
+      </div>`;
+  }
+  function showError(msg) {
+    document.getElementById('grid').innerHTML = `
+      <div class="state-box">
+        <div class="state-icon">⚠️</div>
+        <div class="state-title">Impossible de contacter le serveur</div>
+        <div class="state-sub">${msg}<br/>Vérifie que Node.js tourne sur le port 3000.</div>
+      </div>`;
+  }
+
+  // ---- Événements ----
+  document.getElementById('searchInput').addEventListener('input', applyFilters);
+  document.getElementById('filterNiveau').addEventListener('change', applyFilters);
+
+  // ---- Démarrage ----
+  loadData();
+</script>
+</body>
+</html>
